@@ -4,8 +4,7 @@ class IA {
 private :
 	int maxDepth;
 	int m_piecePosPoint[7][8][8];
-	std::unordered_map<int, Move> m_killerMoveCmpt[2];
-	std::multiset<Move> m_killerMove[2];
+	std::unordered_map<int, Move> m_killerMove[20];
 	std::unordered_map<unsigned long long, TranspositionTable> m_TTList[20];
 
 	Move m_bestNextMove;

@@ -11,7 +11,7 @@
 #define WHITE	1
 #define BLACK	0
 
-#define KILLER_DEPTH 2
+#define KILLER_DEPTH 3
 
 
 

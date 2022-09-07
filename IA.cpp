@@ -156,34 +156,10 @@ float IA::minimax(int depth, bool team, int alpha, int beta) {
 				if (nodeValue >= alpha) {
 					alpha = nodeValue;
 					if (nodeValue >= beta) {
-
-						if (depth >0) {
-							int moveHash = m_currentGame->hashMove(move);
-							std::unordered_map<int, Move>::const_iterator index = m_killerMoveCmpt[team].find(moveHash);
-							if (index == m_killerMoveCmpt[team].end()) { // if move not in the killer move list
-								move.orderScore = depth * depth;
-								m_killerMoveCmpt[team].insert({ moveHash,move});
-							}
-							else {
-								move.orderScore = depth * depth + index->second.orderScore; // else increase the counter
-								
-							}
-							
-							if (m_killerMove->size() >= 5) {	// if the set is not empty
-
-
-								std::cout << "LOWEST ELEMENT :" << m_killerMove[team].rbegin()->orderScore << std::endl;
-								if (move.orderScore > m_killerMove->rbegin()->orderScore) {
-									m_killerMove[team].erase(*m_killerMove->rbegin());
-									m_killerMove[team].insert(move);
-								}
-								m_killerMoveCmpt[team].insert({ moveHash,move });
-							}
-							else m_killerMove[team].insert(move);
-							
+						int moveHash = m_currentGame->hashMove(move);
+						if (depth > KILLER_DEPTH) {
+							m_killerMove[depth].insert({ m_currentGame->hashMove(move), move});
 						}
-						
-						
 						return nodeValue;
 					}
 				}
@@ -288,15 +264,11 @@ Move IA::findMove(int maxDepth, bool team) {
 void IA::updateMoveValue(Move* move, int depth, bool team)
 {
 	move->orderScore = 0;
-	// killer move ordering
 	if (depth > KILLER_DEPTH) {
-		int it = 0;
-		std::cout << m_killerMove->size() << std::endl;
-		for (auto kMove : m_killerMove[team]) {
-			
-			std::cout << m_currentGame->getPosFromCoo(kMove.from) << m_currentGame->getPosFromCoo(kMove.to) <<": " << kMove.orderScore <<  std::endl;
-			if (kMove == *move)
-				move->orderScore += 100000+(5-it);
+		std::unordered_map<int,Move >::const_iterator CoorespondingMove = m_killerMove[depth].find(m_currentGame->hashMove(*move));
+		if (CoorespondingMove != m_killerMove[depth].end()) {
+			move->orderScore += 10000;
+
 		}
 	}
 
@@ -308,7 +280,7 @@ void IA::updateMoveValue(Move* move, int depth, bool team)
 	//piece Weight ordering
 	move->orderScore += m_currentGame->getPieceFromPos(move->from.x, move->from.y).getWeight();
 
-	//move->orderScore += m_piecePosPoint[m_currentGame->getPieceFromPos(move->from.x, move->from.y).getId()-1][move->to.x][move->to.y] - m_piecePosPoint[m_currentGame->getPieceFromPos(move->from.x, move->from.y).getId()-1][move->from.x][move->from.y];
+	//move->orderScore += m_piecePosPoint[m_currentGame->getPieceFromPos(move->from.x, move->from.y).getType()-1][move->to.x][move->to.y] - m_piecePosPoint[m_currentGame->getPieceFromPos(move->from.x, move->from.y).getType() -1][move->from.x][move->from.y];
 
 	if (move->Promotion) {
 		move->orderScore += 10000;

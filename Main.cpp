@@ -18,13 +18,12 @@ int main() {
 		currPlayer = !currPlayer;
 		if (currPlayer == 1) move = engine.findMove(6, currPlayer);
 		else move = Game.userMoveCmd(currPlayer);
-		Game.displayMoveInfo(move);
 		LastGameStat gameStat;
 		Game.movePiece(move, currPlayer, &gameStat);
 		
 		Mat = Game.checkForMat(!currPlayer);
 
-		if (Game.getNbrTour() > 200) Mat = 1;
+		//if (Game.getNbrTour() > 200) Mat = 1;
 
 		Game.DisplayBoard();
 
