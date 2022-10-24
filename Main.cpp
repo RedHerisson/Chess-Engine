@@ -2,7 +2,7 @@
 
 int main() {
 
-	Game Game("rnbqk2r/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
+	Game Game("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR");
 
 	
 	Game.DisplayBoard();
@@ -17,13 +17,13 @@ int main() {
 		Game.incrTour();
 		IA engine(&Game);
 		
-		if (currPlayer == BLACK) move = engine.findMove(6, currPlayer);
+		if (currPlayer == BLACK) move = engine.findMove(7, currPlayer);
 		else move = Game.userMoveCmd(currPlayer);
 		LastGameStat gameStat;
 		Game.DisplayBoard();
 		Game.movePiece(move, currPlayer, &gameStat);
 		
-		//Mat = Game.checkForMat(!currPlayer);
+		Mat = Game.checkForMat(!currPlayer);
 
 		//if (Game.getNbrTour() > 200) Mat = 1;
 
