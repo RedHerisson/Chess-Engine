@@ -68,7 +68,7 @@ void Game::UnmovePiece(Move lastMove, bool team, LastGameStat LastGameStat) {
 
 	m_board[lastMove.from.x][lastMove.from.y].placePiece(&m_pieceList[m_board[lastMove.to.x][lastMove.to.y].getPieceId()], lastMove.from); // piece move
 	m_board[lastMove.to.x][lastMove.to.y].setEmpty(); // clear start move
-	m_pieceList[m_board[lastMove.from.x][lastMove.from.x].getPieceId()].setHasMoved(LastGameStat.MovePieceHasMoved);
+	m_pieceList[m_board[lastMove.from.x][lastMove.from.x].getPieceId()].setHasMoved(0);//LastGameStat.MovePieceHasMoved);
 
 	if (lastMove.capture) {
 		m_pieceList[LastGameStat.lastKillId].revive();

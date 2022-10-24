@@ -66,6 +66,7 @@ void Game::BoardStartup(std::string fen)
 				}
 				m_pieceList[PieceIt] = Piece(PieceType, PieceIt, team);
 				m_board[ColIt][lignIt].placePiece(&m_pieceList[PieceIt], newPosition(ColIt, lignIt));
+				m_pieceList[PieceIt].setHasMoved(0);
 				PieceIt++;
 				lignIt++;
 			}
