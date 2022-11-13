@@ -41,7 +41,6 @@ Move Game::userMoveCmd(bool team) {
 				validPos = getPieceRange(CooStart, m_pieceList[m_board[CooStart.x][CooStart.y].getPieceId()].getType(), m_pieceList[m_board[CooStart.x][CooStart.y].getPieceId()].getTeam());
 				//m_antiRecursion = 0; /// only for aff, reset flag after 
 				DisplayBoardOverlay(validPos);
-				std::cout << "has moved :" << m_pieceList[m_board[CooStart.x][CooStart.y].getPieceId()].getIfHasMoved() << std::endl;
 			}
 			else {
 				std::cout << "error deplacement impossible" << std::endl;

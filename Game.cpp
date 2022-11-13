@@ -1,49 +1,52 @@
 #include "game.h"
 
-
+/// constructor of a Game
 Game::Game(std::string fen, unsigned long long keyArraySeed)
 {
-	m_stat.nodes = 0;
+	m_stat.nodes = 0; // set variable to 0
 	m_stat.EnPassant = 0;
 	m_stat.promotions = 0;
 	m_nbrTour = 0;
-	if (keyArraySeed == 0) {
+	if (keyArraySeed == 0) { ///  create Key for transposition table
 		HashKey();
 	}
-	BoardStartup(fen);
-	
+	BoardStartup(fen); /// create of the board depending of the initial fen
+
 }
 
-Game::~Game()
+Game::~Game() /// destructor of Game
 {
 }
 
+
+/// creation of the board with the fen
+/// TO DO : INVERT COL AND LIGN
 void Game::BoardStartup(std::string fen)
 {
 	int ColIt = 0;
 	int lignIt = 0;
 	int PieceIt = 0;
-	for (int it = 0; it < fen.size(); it++) {
+	for (int it = 0; it < fen.size(); it++) { /// for each caracter of the fen string
 
 		char currChar = fen[it];
 		bool team;
 
-		if (currChar >= 48 && currChar <= 56) {
+		if (currChar >= 48 && currChar <= 56) { /// if the caracter is a number, add the number to lign pointer
 			lignIt += (int)currChar - 48;
 		}
 		else {
-			if (currChar >= 65 && currChar <= 90) {
-				team = true;
-				currChar = currChar + 32;
+			if (currChar >= 65 && currChar <= 90) { /// if the caracter is a maj
+				team = true; /// team 1
+				currChar = currChar + 32; /// put caracter back to min
 			}
-			else team = false;
-			if (currChar == '/') {
+			else team = false; /// else team 0
+			if (currChar == '/') { /// if caracter is / return the the next col of the board
 				ColIt++;
 				lignIt = 0;
 			}
 			else {
 				int PieceType;
-				switch (currChar) {
+				switch (currChar) { /// depending on the caracter, creating the correct piece object
 				case ('k'):
 					PieceType = 6;
 					m_kingId[team] = PieceIt;
@@ -65,17 +68,18 @@ void Game::BoardStartup(std::string fen)
 					break;
 				}
 				m_pieceList[PieceIt] = Piece(PieceType, PieceIt, team);
-				m_board[ColIt][lignIt].placePiece(&m_pieceList[PieceIt], newPosition(ColIt, lignIt));
-				m_pieceList[PieceIt].setHasMoved(0);
+				m_board[ColIt][lignIt].placePiece(&m_pieceList[PieceIt], newPosition(ColIt, lignIt)); /// put it at the right place on the board
 				PieceIt++;
 				lignIt++;
 			}
 		}
 	}
+	/// At the end update any check
 	m_kingInCheck[0] = checkCheckOnTile(m_pieceList[m_kingId[0]].getLocation(), 1);
 	m_kingInCheck[1] = checkCheckOnTile(m_pieceList[m_kingId[1]].getLocation(), 0);
 }
 
+/// transform chess notation of char to program notation using position object
 position Game::getCooFromPos(char col, char lig) //a7
 {
 	position coo;
@@ -88,6 +92,7 @@ position Game::getCooFromPos(char col, char lig) //a7
 	return coo;
 }
 
+/// transform program notation using position object to chess notation of char
 std::string Game::getPosFromCoo(position coo) {
 	std::string pos = "a0";
 	pos[0] = coo.y + 'a';
@@ -96,12 +101,12 @@ std::string Game::getPosFromCoo(position coo) {
 
 }
 
-
+/// check of the move tested is posible for the piece
 bool Game::checkMove(Move* move, int pieceType, bool pieceTeam)
 {
-	std::vector <Move> possibleMove = getPieceRange(move->from, pieceType, pieceTeam);
+	std::vector <Move> possibleMove = getPieceRange(move->from, pieceType, pieceTeam); /// get the vector of posible move by the piece
 	for (auto cmpMove : possibleMove) {
-		if (move->to.x == cmpMove.to.x && move->to.y == cmpMove.to.y) {
+		if (move->to.x == cmpMove.to.x && move->to.y == cmpMove.to.y) { /// test if the move is in the vector
 			*move = cmpMove;
 			return true;
 		}
@@ -109,6 +114,7 @@ bool Game::checkMove(Move* move, int pieceType, bool pieceTeam)
 	return false;
 }
 
+// check if a position is in check or not.
 bool Game::checkCheckOnTile(position tile, bool opteam) {
 
 		//knight check detection ( factorisation possible with directional  vector
@@ -167,7 +173,7 @@ bool Game::checkCheckOnTile(position tile, bool opteam) {
 			}
 		}
 
-		/// sliding piece check detection 
+		/// sliding piece check detection
 
 		//std::vector<position> AllTileExplored;
 		int directionVect[3] = { -1, 0, 1 };
@@ -205,7 +211,8 @@ bool Game::checkCheckOnTile(position tile, bool opteam) {
 		return false;
 }
 
-bool Game::checkPrevision(Move move, bool team) /// check 
+// program to check if after a move there is stille check
+bool Game::checkPrevision(Move move, bool team) /// check
 {
 	bool returnValue;
 	LastGameStat currGameStat;
@@ -216,11 +223,12 @@ bool Game::checkPrevision(Move move, bool team) /// check
 
 }
 
+/// program to check for mat at the end of the turn
 bool Game::checkForMat(bool team)
 {
 
 	bool findValid = false;
-	for (auto piece : m_pieceList) {
+	for (auto piece : m_pieceList) { // check for each move to see if there is only on move possible
 		if (piece.getifAlive() && piece.getTeam() == team) {
 			std::vector<Move> pieceRange = getPieceRange(piece.getLocation(), piece.getType(), team);
 			for (auto PseudoValidMove : pieceRange) {
@@ -232,7 +240,7 @@ bool Game::checkForMat(bool team)
 			if (findValid) break;
 		}
 	}
-	if (!findValid) {
+	if (!findValid) { // if no move possible, checkMate
 		//std::cout << "CHECKMATE" << std::endl;
 		return true;
 	}
@@ -245,7 +253,7 @@ bool Game::checkForMat(bool team)
 			else nbrPieceT1++;
 		}
 	}
-	if (nbrPieceT0 == 1) {
+	if (nbrPieceT0 == 1) { // if there is only two piece left, it's a draw
 		if (nbrPieceT1 == 1) {
 			std::cout << "DRAW" << std::endl;
 			return true;
@@ -256,9 +264,10 @@ bool Game::checkForMat(bool team)
 
 }
 
+/// programme to display the board on the console
 void Game::DisplayBoard() {
 
-	for (int i = 0; i < 8; i++) {
+	for (int i = 0; i < 8; i++) { /// board placement
 		std::cout << "+---+---+---+---+---+---+---+---+" << std::endl;
 		for (int j = 0; j < 8; j++) {
 			std::cout << "| ";
@@ -301,6 +310,7 @@ void Game::DisplayBoard() {
 	std::cout << std::endl;
 }
 
+// display the board plus a validMove list
 void Game::DisplayBoardOverlay(std::vector<Move> validMove) {
 	for (int i = 0; i < 8; i++) {
 		std::cout << "+---+---+---+---+---+---+---+---+" << std::endl;
@@ -353,6 +363,7 @@ void Game::DisplayBoardOverlay(std::vector<Move> validMove) {
 	std::cout << std::endl;
 }
 
+/// create an hash function from the current game object
 unsigned long long Game::HashFunction() {
 	unsigned long long hash = 0;
 	for (int i = 0; i < 8; i++) {
@@ -360,7 +371,7 @@ unsigned long long Game::HashFunction() {
 			if (!m_board[i][j].isEmpty()) {
 				int pieceId = m_pieceList[m_board[i][j].getPieceId()].getType() - 1;
 				if (m_pieceList[m_board[i][j].getPieceId()].getTeam()) pieceId += 6;
-				hash ^= m_keyArray[pieceId][i][j];
+				hash ^= m_keyArray[pieceId][i][j]; /// XOR every piece of the board
 			}
 		}
 	}
