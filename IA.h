@@ -1,22 +1,25 @@
 #include "Game.h"
 
+/// definition of the class IA, using to find best next move in chess
+
 class IA {
 private :
-	int maxDepth;
-	int m_piecePosPoint[7][8][8];
-	std::unordered_map<int, Move> m_killerMove[20];
-	std::unordered_map<unsigned long long, TranspositionTable> m_TTList[20];
+	int maxDepth;	/// the max depth the minMax algorithm can go to
+	int m_piecePosPoint[7][8][8];	/// point map for the evalution of each piece position
+	std::unordered_map<int, Move> m_killerMove[20];	/// killer move vector
+	std::unordered_map<unsigned long long, TranspositionTable> m_TTList[20];	/// transpotition table
+	// note -> set as 20 because of depth, increase if you want to try higher depth than 20
 
-	Move m_bestNextMove;
-	gamestat m_stat;
-	Game* m_currentGame;
+	Move m_bestNextMove;	/// last best move find
+	gamestat m_stat;	/// stat for data analysis at debug
+	Game* m_currentGame;	/// pointer to the current game
 
 public :
 
-	IA(Game* currentGame); 
+	IA(Game* currentGame);	/// constuctor of the IA object
 	~IA();
 
-	/// performance test 
+	/// in IA.cpp
 	void treeSearch(int depth, int team);
 	float minimax(int depth, bool team, int alpha, int beta);
 	void perf();

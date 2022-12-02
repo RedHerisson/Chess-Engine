@@ -1,8 +1,10 @@
 #include "Game.h"
+/// method of the move class and function to move piece if  game
 
+//
 void Game::movePiece(Move move, bool team, LastGameStat* LastGameStat) {
 
-	if (m_enPassant.Available && m_enPassant.team == team) m_enPassant.Available = 0; // enPassant ne dure qu'un seul tour, on le retire après
+	if (m_enPassant.Available && m_enPassant.team == team) m_enPassant.Available = 0; // enPassant ne dure qu'un seul tour, on le retire aprï¿½s
 
 	LastGameStat->MovePieceHasMoved = m_pieceList[m_board[move.from.x][move.from.y].getPieceId()].getIfHasMoved();
 
@@ -64,6 +66,7 @@ void Game::movePiece(Move move, bool team, LastGameStat* LastGameStat) {
 	}
 }
 
+// for tree analysis, program need to make virtual move to test possibility, and undo them after
 void Game::UnmovePiece(Move lastMove, bool team, LastGameStat LastGameStat) {
 
 	m_board[lastMove.from.x][lastMove.from.y].placePiece(&m_pieceList[m_board[lastMove.to.x][lastMove.to.y].getPieceId()], lastMove.from); // piece move
@@ -109,17 +112,20 @@ void Game::UnmovePiece(Move lastMove, bool team, LastGameStat LastGameStat) {
 		m_board[m_pieceList[LastGameStat.enPassantTakeId].getLocation().x][m_pieceList[LastGameStat.enPassantTakeId].getLocation().y].placePiece(&m_pieceList[LastGameStat.enPassantTakeId], m_pieceList[LastGameStat.enPassantTakeId].getLocation()); // piece move
 		m_board[m_pieceList[LastGameStat.enPassantTakeId].getLocation().x][m_pieceList[LastGameStat.enPassantTakeId].getLocation().y].setFull();
 		m_pieceList[m_board[m_pieceList[LastGameStat.enPassantTakeId].getLocation().x][m_pieceList[LastGameStat.enPassantTakeId].getLocation().y].getPieceId()].setHasMoved(LastGameStat.enPassantTakeHasMoved);
-		
+
 	}
 
 
-	
+
 }
 
 
+/// function to return the move possiblity array from a specific piece and position
 std::vector<Move> Game::getPieceRange(position from, int pieceType, bool pieceTeam) {
 	std::vector <Move> possibleMove;
-	//std::cout << pieceType << std::endl;
+
+	// depending on the piece type, create the array from the position that correspond
+
 	if (pieceType == 1) possibleMove = checkPawnMove(from, pieceTeam);
 	if (pieceType == 2) possibleMove = checkBishopMove(from);
 	if (pieceType == 3) possibleMove = checkKnightMove(from);
@@ -131,7 +137,7 @@ std::vector<Move> Game::getPieceRange(position from, int pieceType, bool pieceTe
 /// <summary>
 /// generation of the list of move for a specific pawn
 /// </summary>
-/// <param name="from"> 
+/// <param name="from">
 /// current pawn tile
 /// </param>
 /// <param name="team">
@@ -141,8 +147,8 @@ std::vector<Move> Game::getPieceRange(position from, int pieceType, bool pieceTe
 std::vector<Move> Game::checkPawnMove(position from, bool team)
 {
 	std::vector<Move> moveMap;
-	
-	if (team == WHITE) { 
+
+	if (team == WHITE) {
 		if (from.x == 6) { /// two tile move possible at start position
 			if (m_board[from.x - 2][from.y].isEmpty() && m_board[from.x - 1][from.y].isEmpty()) { /// only if both tile are empty
 				moveMap.push_back(newMove(from, newPosition(from.x - 2, from.y), 0, 0,0,0));
@@ -150,16 +156,16 @@ std::vector<Move> Game::checkPawnMove(position from, bool team)
 		}
 		// pawn forward move, cannot take another piece
 		if (from.x - 1 >= 0) if (m_board[from.x - 1][from.y].isEmpty()) moveMap.push_back(newMove(from, newPosition(from.x - 1, from.y), 0, 0, 0, 0));
-		
+
 		// pawn take move, always take piece
 		if (from.x - 1 >= 0 && from.y + 1 <= 7)if ((!isSameTeam(from, newPosition(from.x - 1, from.y + 1))) && !m_board[from.x - 1][from.y + 1].isEmpty()) moveMap.push_back(newMove(from, newPosition(from.x - 1, from.y + 1), 1, 0, 0, 0));
-		if (from.x - 1 >= 0 && from.y - 1 >= 0)if (!isSameTeam(from, newPosition(from.x - 1, from.y - 1)) && !m_board[from.x - 1][from.y - 1].isEmpty()) moveMap.push_back(newMove(from, newPosition(from.x - 1, from.y - 1), 1, 0, 0, 0));                      
-		
+		if (from.x - 1 >= 0 && from.y - 1 >= 0)if (!isSameTeam(from, newPosition(from.x - 1, from.y - 1)) && !m_board[from.x - 1][from.y - 1].isEmpty()) moveMap.push_back(newMove(from, newPosition(from.x - 1, from.y - 1), 1, 0, 0, 0));
+
 		// if an enPassant is disponible, add it to the vector
-		if (m_enPassant.Available) { 
+		if (m_enPassant.Available) {
 			if (from.y == m_enPassant.ligne + 1 || from.y == m_enPassant.ligne - 1) {
 				if (from.x == 4) {
-					moveMap.push_back(newMove(from, newPosition(5, m_enPassant.ligne), 0, 0, 0, 1)); /// en passant to 1 
+					moveMap.push_back(newMove(from, newPosition(5, m_enPassant.ligne), 0, 0, 0, 1)); /// en passant to 1
 				}
 
 			}
@@ -178,7 +184,7 @@ std::vector<Move> Game::checkPawnMove(position from, bool team)
 		if (m_enPassant.Available) {
 			if (from.y == m_enPassant.ligne + 1 || from.y == m_enPassant.ligne - 1) {
 				if (from.x == 3) {
-					moveMap.push_back(newMove(from, newPosition(2, m_enPassant.ligne), 0, 0, 0, 1)); /// en passant to 1 
+					moveMap.push_back(newMove(from, newPosition(2, m_enPassant.ligne), 0, 0, 0, 1)); /// en passant to 1
 
 				}
 
@@ -245,6 +251,7 @@ std::vector<Move> Game::checkBishopMove(position from)
 	return moveMap;
 }
 
+/// check move for knight
 std::vector<Move> Game::checkKnightMove(position from)
 {
 	std::vector<Move> moveMap;
@@ -264,6 +271,7 @@ std::vector<Move> Game::checkKnightMove(position from)
 
 }
 
+/// search move for Rook
 std::vector<Move> Game::checkRookMove(position from)
 {
 	std::vector<Move> moveMap;
@@ -301,20 +309,23 @@ std::vector<Move> Game::checkRookMove(position from)
 	return moveMap;
 }
 
+/// search move for Queen
 std::vector<Move> Game::checkQueenMove(position from)
 {
 	std::vector<Move> moveMap1, moveMap2;
+	// moveMap of queen is bishop and rook combine
 	moveMap1 = checkBishopMove(from);
 	moveMap2 = checkRookMove(from);
 	moveMap1.insert(moveMap1.end(), moveMap2.begin(), moveMap2.end());
 	return moveMap1;
 }
 
+/// search move for King
 std::vector<Move> Game::checkKingMove(position from, bool team)
 {
 	std::vector<Move> moveMap;
 	if (from.x - 1 >= 0 && from.y - 1 >= 0) if (!isSameTeam(from, newPosition(from.x - 1, from.y - 1))) moveMap.push_back(newMove(from, newPosition(from.x - 1, from.y - 1), !m_board[from.x - 1][from.y - 1].isEmpty(), 0, 0, 0));
-	
+
 	if (from.x + 1 <= 7 && from.y + 1 <= 7) if (!isSameTeam(from, newPosition(from.x + 1, from.y + 1))) moveMap.push_back(newMove(from, newPosition(from.x + 1, from.y + 1), !m_board[from.x + 1][from.y + 1].isEmpty(), 0, 0, 0));
 	if (from.x - 1 >= 0 && from.y + 1 <= 7) if (!isSameTeam(from, newPosition(from.x - 1, from.y + 1))) moveMap.push_back(newMove(from, newPosition(from.x - 1, from.y + 1), !m_board[from.x - 1][from.y + 1].isEmpty(), 0, 0, 0));
 	if (from.x + 1 <= 7 && from.y - 1 >= 0) if (!isSameTeam(from, newPosition(from.x + 1, from.y - 1))) moveMap.push_back(newMove(from, newPosition(from.x + 1, from.y - 1), !m_board[from.x + 1][from.y - 1].isEmpty(), 0, 0, 0));
@@ -324,11 +335,13 @@ std::vector<Move> Game::checkKingMove(position from, bool team)
 
 	if (from.x + 1 <= 7) if (!isSameTeam(from, newPosition(from.x + 1, from.y))) moveMap.push_back(newMove(from, newPosition(from.x + 1, from.y), !m_board[from.x + 1][from.y].isEmpty(), 0, 0, 0));
 	if (from.x - 1 >= 0) if (!isSameTeam(from, newPosition(from.x - 1, from.y))) moveMap.push_back(newMove(from, newPosition(from.x - 1, from.y), !m_board[from.x - 1][from.y].isEmpty(), 0, 0, 0));
-	std::vector<Move> castlingfrom = checkForCastling(team);
+	std::vector<Move> castlingfrom = checkForCastling(team); // get potental casling option
 	for (int i = 0; i < castlingfrom.size(); i++) moveMap.push_back(castlingfrom[i]);
 
 	return moveMap;
 }
+
+/// test if two piece are in the same team
 bool Game::isSameTeam(position from, position to)
 {
 	if (!m_board[to.x][to.y].isEmpty()) {
@@ -336,6 +349,7 @@ bool Game::isSameTeam(position from, position to)
 	}
 	return false;
 }
+
 /// <summary>
 /// funtion that return rook possiblity for a selected team
 /// </summary>
@@ -383,6 +397,7 @@ std::vector<Move> Game::checkForCastling(bool team) {
 
 }
 
+/// create a move with correct data
 Move Game::newMove(position from, position to, bool capture, int promotion, bool castling, bool TakeEnPassant)
 {
 	Move newMove;
@@ -396,6 +411,7 @@ Move Game::newMove(position from, position to, bool capture, int promotion, bool
 
 }
 
+// create a position structure
 position Game::newPosition(int x, int y)
 {
 	position newPos;
@@ -404,6 +420,7 @@ position Game::newPosition(int x, int y)
 	return newPos;
 }
 
+// display debug information of move object
 void Game::displayMoveInfo(Move move) {
 	std::cout << "	MOVE INFO " << std::endl;
 	std::cout << "CAPTURE :" << move.capture << std::endl;
